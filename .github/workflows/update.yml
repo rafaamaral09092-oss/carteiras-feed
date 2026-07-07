@@ -1,0 +1,37 @@
+name: Atualiza carteiras
+
+on:
+  schedule:
+    - cron: '0 9 * * *'      # todo dia às 09:00 UTC (~06:00 no horário de Brasília)
+  workflow_dispatch: {}        # permite rodar manualmente pelo botão "Run workflow"
+
+permissions:
+  contents: write              # necessário para o job comitar o carteiras.json de volta
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instala dependências
+        run: pip install requests beautifulsoup4 lxml
+
+      - name: Gera o feed
+        run: python scripts/build_feed.py
+
+      - name: Comita se houver mudança
+        run: |
+          git config user.name "carteiras-bot"
+          git config user.email "carteiras-bot@users.noreply.github.com"
+          git add carteiras.json
+          if git diff --cached --quiet; then
+            echo "Sem mudanças — nada a comitar."
+          else
+            git commit -m "Atualiza carteiras ($(date -u +%F))"
+            git push
+          fi

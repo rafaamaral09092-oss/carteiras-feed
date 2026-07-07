@@ -1,0 +1,142 @@
+{
+  "asOf": "2026-07",
+  "updatedAt": 1783387502651,
+  "categories": [
+    {
+      "category": "SMALL_CAP",
+      "source": "InfoMoney (consolidado)",
+      "history": {
+        "2026-06": [
+          {
+            "t": "ORVR3",
+            "c": 6
+          },
+          {
+            "t": "PGMN3",
+            "c": 5
+          },
+          {
+            "t": "TTEN3",
+            "c": 4
+          },
+          {
+            "t": "POMO4",
+            "c": 4
+          },
+          {
+            "t": "CSMG3",
+            "c": 4
+          }
+        ]
+      }
+    },
+    {
+      "category": "FII",
+      "source": "InfoMoney (consolidado)",
+      "history": {
+        "2026-07": [
+          {
+            "t": "VILG11",
+            "c": 6
+          },
+          {
+            "t": "BRCO11",
+            "c": 5
+          },
+          {
+            "t": "HSML11",
+            "c": 5
+          },
+          {
+            "t": "BTLG11",
+            "c": 4
+          },
+          {
+            "t": "KNCR11",
+            "c": 4
+          },
+          {
+            "t": "MCCI11",
+            "c": 4
+          },
+          {
+            "t": "PVBI11",
+            "c": 4
+          },
+          {
+            "t": "RBRX11",
+            "c": 4
+          },
+          {
+            "t": "TRXF11",
+            "c": 4
+          }
+        ]
+      }
+    },
+    {
+      "category": "DIVIDENDOS",
+      "source": "InfoMoney (consolidado)",
+      "history": {
+        "2026-06": [
+          {
+            "t": "ALOS3",
+            "c": 8
+          },
+          {
+            "t": "PETR4",
+            "c": 8
+          },
+          {
+            "t": "VALE3",
+            "c": 7
+          },
+          {
+            "t": "ITUB4",
+            "c": 5
+          },
+          {
+            "t": "CPLE3",
+            "c": 5
+          },
+          {
+            "t": "AXIA3",
+            "c": 5
+          }
+        ]
+      }
+    },
+    {
+      "category": "CRESCIMENTO",
+      "source": "InfoMoney (consolidado)",
+      "history": {
+        "2026-06": [
+          {
+            "t": "VALE3",
+            "c": 10
+          },
+          {
+            "t": "ITUB4",
+            "c": 7
+          },
+          {
+            "t": "AXIA3",
+            "c": 6
+          },
+          {
+            "t": "PETR4",
+            "c": 6
+          },
+          {
+            "t": "RENT3",
+            "c": 6
+          },
+          {
+            "t": "EMBJ3",
+            "c": 5
+          }
+        ]
+      }
+    }
+  ]
+}
