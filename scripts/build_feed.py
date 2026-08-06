@@ -34,6 +34,11 @@ HEADERS = {
 # Ticker da B3: 4 letras + 1 ou 2 dígitos (ITUB4, TAEE11, ALOS3, MXRF11).
 TICKER_RE = re.compile(r"\b[A-Z]{4}\d{1,2}\b")
 
+# Cabeçalho da coluna de contagem. NÃO casa "carteira" no singular de propósito:
+# as tabelas trazem uma linha de título tipo "Carteira Small Caps" antes do cabeçalho,
+# e casar com ela apontava a contagem para a coluna de nome da empresa.
+COUNT_HEADER_RE = re.compile(r"recomenda|indica|n[º°o]\s*de\s*carteiras|carteiras")
+
 MESES = {
     "janeiro": 1, "fevereiro": 2, "marco": 3, "março": 3, "abril": 4, "maio": 5,
     "junho": 6, "julho": 7, "agosto": 8, "setembro": 9, "outubro": 10,
@@ -75,7 +80,16 @@ def month_from_slug(slug: str) -> str | None:
 def fetch(url: str) -> str:
     resp = requests.get(url, headers=HEADERS, timeout=20)
     resp.raise_for_status()
+    # Sem charset no header, o requests assume ISO-8859-1 e "Indicações" chega corrompido.
+    if not resp.encoding or resp.encoding.lower() == "iso-8859-1":
+        resp.encoding = resp.apparent_encoding or "utf-8"
     return resp.text
+
+
+def looks_like_count(values: list[str]) -> bool:
+    """A coluna passa como 'nº de recomendações' se for majoritariamente inteiro de 1 a 20."""
+    nums = [int(v) for v in values if re.fullmatch(r"\d{1,2}", v.strip())]
+    return len(nums) >= 3 and all(1 <= n <= 20 for n in nums)
 
 
 def discover_articles() -> dict[str, str]:
@@ -135,21 +149,36 @@ def parse_holdings(url: str) -> list[dict]:
         if ticker_col is None or ticker_hits < 3:
             continue
 
-        # Coluna de contagem: header com "recomenda/indica/carteira", senão coluna numérica 1..20.
-        header = [c.lower() for c in matrix[0]]
+        # Linha de cabeçalho: a 1ª das 3 primeiras com ≥2 células preenchidas e sem ticker.
+        # A matéria costuma abrir com uma linha de título mesclada ("Carteira Small Caps"),
+        # que não é cabeçalho — tratá-la como tal apontava a contagem para a coluna errada.
+        header_row = 0
+        for i, r in enumerate(matrix[:3]):
+            if len([c for c in r if c.strip()]) >= 2 \
+                    and not any(TICKER_RE.search(c.upper()) for c in r):
+                header_row = i
+                break
+
+        # Coluna de contagem: header com "recomenda/indica/carteiras", senão coluna numérica.
+        header = [c.lower() for c in matrix[header_row]]
         count_col = None
         for j, h in enumerate(header):
-            if re.search(r"recomend|indica|carteira", h):
+            if COUNT_HEADER_RE.search(h):
                 count_col = j
                 break
-        if count_col is None:
+        # O header pode apontar errado: só aceita a coluna se ela for de fato numérica.
+        if count_col is None or not looks_like_count(column(count_col)[header_row + 1:]):
+            count_col = None
             for j in range(ncol):
                 if j == ticker_col:
                     continue
-                nums = [int(v) for v in column(j) if re.fullmatch(r"\d{1,2}", v.strip())]
-                if len(nums) >= 3 and all(1 <= n <= 20 for n in nums):
+                if looks_like_count(column(j)[header_row + 1:]):
                     count_col = j
                     break
+        # Sem contagem confiável a tabela é descartada: melhor manter o mês anterior do que
+        # gravar um mês inteiro com c=0 e estragar o ranking de convicção no app.
+        if count_col is None:
+            continue
 
         holdings, seen = [], set()
         for r in matrix:
